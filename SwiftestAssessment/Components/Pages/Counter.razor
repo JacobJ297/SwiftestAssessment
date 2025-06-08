@@ -1,0 +1,100 @@
+﻿@page "/counter"
+@rendermode InteractiveServer
+
+<div class="calc">
+    <h3>Hip Roof Calculator</h3>
+
+    <p>Enter roof <strong>width</strong>:</p>
+    <input type="number" @bind="width" />
+
+    <p>Enter roof <strong>length</strong> </p>
+    <input type="number" @bind="length" />
+    <p>The hip rafter length of this roof is @HipLength.ToString("F2") m</p>
+</div>
+<div></div>
+<!-- Diagram -->
+<div class="roof-container">
+    <div class="roof" style="@RoofStyle">
+
+        <!-- Ridge Line -->
+        <div class="ridge" style="@RidgeStyle"></div>
+
+        <!-- Diagonals -->
+        <div class="diagonal" style="@DrawLine(RidgeLeftX, RidgeY, 0, 0)"></div>
+        <div class="diagonal" style="@DrawLine(RidgeLeftX, RidgeY, 0, width)"></div>
+        <div class="diagonal" style="@DrawLine(RidgeRightX, RidgeY, length, 0)"></div>
+        <div class="diagonal" style="@DrawLine(RidgeRightX, RidgeY, length, width)"></div>
+
+        <!-- LABELS -->
+        <div class="label ridge-label" style="@RidgeLabelStyle">Ridge: @ridgeWidth.ToString("F2") m</div>
+        <div class="label hip-label" style="@HipLabelStyle">Hip: @HipLength.ToString("F2") m</div>
+        <div class="label width-label" style="@WidthLabelStyle">Width: @(width) m</div>
+        <div class="label length-label" style="@LengthLabelStyle">Length: @(length) m</div>
+
+    </div>
+</div>
+
+@code {
+    private double width = 5;      
+    private double length = 10;      
+   
+    double angle1 = (Math.PI / 180) * 35; // convert degrees to radians
+    double angle2 = (Math.PI / 180) * 45;
+    private double ridgeWidth => length - width/Math.Tan(angle1);  
+    // Hip length calulation
+    double z => Math.Sqrt(Math.Pow(width / 2 / Math.Tan(angle1), 2) + Math.Pow(width / 2 / Math.Tan(angle2), 2));
+    private double HipLength => Math.Sqrt(Math.Pow(z, 2) + Math.Pow(width / 2, 2));
+    private double RidgeY => width / 2;
+    private double RidgeLeftX => (length - ridgeWidth) / 2;
+    private double RidgeRightX => (length + ridgeWidth) / 2;
+    private const double scale = 50;  // scale factor for rendering
+    
+    private string RoofStyle => $"position: relative; width: {length * scale}px; height: {width * scale}px; background: #eee; border: 2px solid #333;";
+
+    private string RidgeStyle =>
+        $"position: absolute; top: {(RidgeY) * scale}px; left: {RidgeLeftX * scale}px; width: {ridgeWidth * scale}px; height: 2px; background-color: black;";
+    // generate the ridge line style
+    private string DrawLine(double x1, double y1, double x2, double y2)
+    {
+        var dx = x2 - x1;
+        var dy = y2 - y1;
+        var length2 = Math.Sqrt(dx * dx + dy * dy);
+        var angle = Math.Atan2(dy, dx) * (180 / Math.PI);
+
+        return $"position: absolute; " +
+               $"top: {y1 * scale}px; left: {x1 * scale}px; " +
+               $"width: {length2 * scale}px; height: 2px; " +
+               $"background: red; " +
+               $"transform: rotate({angle}deg); " +
+               $"transform-origin: left center;";
+    }
+
+
+
+    private double HipDx => (length - ridgeWidth / 2);
+    private double HipDy => width / 2;
+    private double HipAngle => Math.Atan2(HipDy, HipDx) * (180 / Math.PI);
+    
+
+    
+
+    // Center of ridge
+    private string RidgeLabelStyle =>
+        $"top: {scale * RidgeY - 25}px; left: {scale * (RidgeLeftX + ridgeWidth / 2) - 40}px;";
+
+    // Parallel to top-left diagonal (hip label)
+    private string HipLabelStyle =>
+        $"top: {(scale * RidgeY + scale * HipDy) / 2 - 10}px; " +
+        $"left: {(scale * RidgeLeftX + scale * (RidgeLeftX - HipDx)) / 2}px; " +
+        $"transform: rotate({-HipAngle}deg); transform-origin: left center;";
+
+    // Width label (above roof, centered)
+    private string WidthLabelStyle =>
+        $"top: {-25}px; left: {scale * width / 2 - 50}px;";
+
+    // Length label (to the right of roof, centered)
+    private string LengthLabelStyle =>
+        $"top: {scale * length / 2 - 10}px; left: {scale * width + 10}px;";
+
+
+}
