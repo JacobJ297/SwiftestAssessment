@@ -9,7 +9,7 @@
 
     <p>Enter roof <strong>length</strong> </p>
     <input type="number" @bind="length" />
-    <p>The hip rafter length of this roof is @HipLength.ToString("F2") m</p>
+    <p>The <span class="answer">hip rafter length</span> of this roof is @HipLength.ToString("F2") m</p>
 </div>
 <div></div>
 <!-- Diagram -->
@@ -71,30 +71,27 @@
 
 
 
-    private double HipDx => (length - ridgeWidth / 2);
+    private double HipDx => (length / 2 - ridgeWidth / 2);
     private double HipDy => width / 2;
     private double HipAngle => Math.Atan2(HipDy, HipDx) * (180 / Math.PI);
     
 
-    
 
     // Center of ridge
     private string RidgeLabelStyle =>
         $"top: {scale * RidgeY - 25}px; left: {scale * (RidgeLeftX + ridgeWidth / 2) - 40}px;";
 
-    // Parallel to top-left diagonal (hip label)
+    // Parallel to top-left diagonal
     private string HipLabelStyle =>
-        $"top: {(scale * RidgeY + scale * HipDy) / 2 - 10}px; " +
-        $"left: {(scale * RidgeLeftX + scale * (RidgeLeftX - HipDx)) / 2}px; " +
+        $"top: {scale * (RidgeY + HipDy / 2) - 10}px; left: {scale * (RidgeLeftX - HipDx / 2)}px; " +
         $"transform: rotate({-HipAngle}deg); transform-origin: left center;";
 
     // Width label (above roof, centered)
     private string WidthLabelStyle =>
-        $"top: {-25}px; left: {scale * width / 2 - 50}px;";
+        $"top: {scale * width / 2 - 10}px; left: {scale * length + 10}px;";
 
     // Length label (to the right of roof, centered)
     private string LengthLabelStyle =>
-        $"top: {scale * length / 2 - 10}px; left: {scale * width + 10}px;";
+        $"top: {-30}px; left: {(scale * length) / 2 -50  }px;";
 
-
-}
+        }
